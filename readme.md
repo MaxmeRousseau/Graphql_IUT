@@ -1,3 +1,9 @@
+# Instalation
+```sh
+# Lancer le projet
+docker compose up -d
+```
+
 ## Migrations
 ```sh
 # Exécuter les migrations Prisma depuis le conteneur 'server'
