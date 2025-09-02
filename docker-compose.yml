@@ -1,0 +1,36 @@
+# Chaînes de connexion à la base de données :
+# - depuis l'hôte (ex. psql, applications locales) : postgres://postgres:example@localhost:5432/etudiant
+# - depuis un autre conteneur dans ce compose : postgres://postgres:example@db:5432/etudiant
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: etudiant
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  server:
+    image: node:22
+    container_name: graphqlServer
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - ./api:/app
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://postgres:example@db:5432/etudiant
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+    name: graphql_iut_db_data
