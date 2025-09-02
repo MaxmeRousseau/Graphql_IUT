@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -15,7 +16,8 @@
     "@apollo/server": "^5.0.0",
     "@prisma/client": "^6.15.0",
     "dotenv": "^17.2.1",
-    "graphql": "^16.11.0"
+    "graphql": "^16.11.0",
+    "graphql-tag": "^2.12.6"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",

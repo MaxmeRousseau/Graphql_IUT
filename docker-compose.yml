@@ -2,6 +2,10 @@
 # - depuis l'hôte (ex. psql, applications locales) : postgres://postgres:example@localhost:5432/etudiant
 # - depuis un autre conteneur dans ce compose : postgres://postgres:example@db:5432/etudiant
 
+# Chaînes de connexion à la base de données :
+# - depuis l'hôte (ex. psql, applications locales) : postgres://postgres:example@localhost:5432/etudiant
+# - depuis un autre conteneur dans ce compose : postgres://postgres:example@db:5432/etudiant
+
 services:
   db:
     image: postgres:15
@@ -21,7 +25,7 @@ services:
     container_name: graphqlServer
     restart: unless-stopped
     working_dir: /app
-    command: sh -c "npm install && npm run dev"
+    command: ["sh", "-c", "npm install && npx prisma generate && npm run dev"]
     volumes:
       - ./api:/app
     ports:

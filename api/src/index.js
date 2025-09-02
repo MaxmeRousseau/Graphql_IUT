@@ -1,24 +1,31 @@
-import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
+import { ApolloServer } from '@apollo/server'
+import { startStandaloneServer } from '@apollo/server/standalone'
+import { etudiantTypeDefs, etudiantResolvers } from './resolvers/etudiants.js'
+import { gql } from 'graphql-tag'
 
-// The GraphQL schema
-const typeDefs = `#graphql
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const { PrismaClient } = require('../generated/prisma')
+const prisma = new PrismaClient()
+
+// Root schema that other modules extend
+const rootTypeDefs = gql`
   type Query {
-    hello: String
+    _empty: String
   }
-`;
 
-// A map of functions which return data for the schema.
-const resolvers = {
-  Query: {
-    hello: () => 'world',
-  },
-};
+  type Mutation {
+    _empty: String
+  }
+`
 
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
+  typeDefs: [rootTypeDefs, etudiantTypeDefs],
+  resolvers: [etudiantResolvers],
+})
 
-const { url } = await startStandaloneServer(server);
-console.log(`🚀 Server ready at ${url}`);
+const { url } = await startStandaloneServer(server, {
+  context: async () => ({ prisma }),
+})
+
+console.log(`🚀 Server ready at ${url}`)
