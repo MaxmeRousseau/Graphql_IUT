@@ -14,12 +14,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Etudiant {
+model User {
   id        Int      @id @default(autoincrement())
   nom       String
-  prenom    String
-  email     String   @unique
-  age       Int
+  age       Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  organizedEvents Event[] @relation("EventOrganizer")
+  eventsParticipated Event[] @relation("EventParticipants")
+}
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  date        DateTime
+  organizerId Int
+  location    String?
+  organizer   User     @relation("EventOrganizer", fields: [organizerId], references: [id])
+  participants User[] @relation("EventParticipants")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -11,3 +11,8 @@ docker compose up -d
 docker compose exec server npx prisma migrate dev --name
 docker compose exec server npx prisma migrate dev
 ```
+
+## Générer le Client prisma
+```sh
+docker compose exec server npx prisma generate
+```
