@@ -1,4 +1,3 @@
-
 import { gql } from 'graphql-tag'
 
 // GraphQL schema for User related queries/mutations. These extend the root
@@ -13,6 +12,7 @@ export const userTypeDefs = gql`
 		createUser(nom: String!, age: Int): User!
 		updateUser(id: Int!, nom: String, age: Int): User!
 		deleteUser(id: Int!): User!
+		addUserToEvent(userId: Int!, eventId: Int!): Event!
 	}
 
   type Event {
@@ -60,6 +60,13 @@ export const userResolvers = {
 
 		deleteUser: async (_parent, { id }, { prisma }) => {
 			return prisma.user.delete({ where: { id } })
+		},
+
+		addUserToEvent: async (_parent, { userId, eventId }, { prisma }) => {
+			return prisma.event.update({
+				where: { id: eventId },
+				data: { participants: { connect: { id: userId } } },
+			})
 		},
 	},
 
