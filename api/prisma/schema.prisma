@@ -27,7 +27,8 @@ model Event {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
-  date        DateTime
+  date_debut  DateTime
+  date_fin    DateTime
   organizerId Int
   location    String?
   organizer   User     @relation("EventOrganizer", fields: [organizerId], references: [id])

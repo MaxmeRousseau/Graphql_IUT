@@ -1,28 +1,24 @@
 import { ApolloServer } from '@apollo/server'
 import { startStandaloneServer } from '@apollo/server/standalone'
-import { gql } from 'graphql-tag'
-import { userTypeDefs, userResolvers } from './resolvers/user.js'
-import { eventTypeDefs, eventResolvers } from './resolvers/event.js'
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { resolvers } from './resolvers/index.js'
 
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const { PrismaClient } = require('../generated/prisma')
 const prisma = new PrismaClient()
 
-// Root schema that other modules extend
-const rootTypeDefs = gql`
-  type Query {
-    _empty: String
-  }
-
-  type Mutation {
-    _empty: String
-  }
-`
+// Load merged SDL from schema.graphql
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const schemaPath = join(__dirname, 'schema.graphql')
+const typeDefs = readFileSync(schemaPath, { encoding: 'utf8' })
 
 const server = new ApolloServer({
-  typeDefs: [rootTypeDefs, userTypeDefs, eventTypeDefs],
-  resolvers: [userResolvers, eventResolvers],
+  typeDefs,
+  resolvers,
 })
 
 const { url } = await startStandaloneServer(server, {

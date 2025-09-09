@@ -1,50 +1,5 @@
-import { gql } from 'graphql-tag'
-
-// GraphQL schema for User related queries/mutations. These extend the root
-// Query/Mutation types defined in the server entrypoint.
-export const userTypeDefs = gql`
-	extend type Query {
-		users: [User!]!
-		user(id: Int!): User
-	}
-
-	extend type Mutation {
-		createUser(nom: String!, age: Int): User!
-		updateUser(id: Int!, nom: String, age: Int): User!
-		deleteUser(id: Int!): User!
-		addUserToEvent(userId: Int!, eventId: Int!): Event!
-	}
-
-  type Event {
-    id: Int!
-    title: String!
-    description: String
-    date: String!
-    location: String
-    createdAt: String!
-    updatedAt: String!
-  }
-
-	type User {
-		id: Int!
-		nom: String!
-		age: Int
-		createdAt: String!
-		updatedAt: String!
-		organizedEvents: [Event!]!
-		eventsParticipated: [Event!]!
-	}
-`
 
 export const userResolvers = {
-	Query: {
-		users: async (_parent, _args, { prisma }) => {
-			return prisma.user.findMany()
-		},
-		user: async (_parent, { id }, { prisma }) => {
-			return prisma.user.findUnique({ where: { id } })
-		},
-	},
 
 	Mutation: {
 		createUser: async (_parent, { nom, age }, { prisma }) => {

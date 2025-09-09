@@ -1,0 +1,52 @@
+# Root types
+type Query {
+  users: [User!]!
+  user(id: Int!): User
+
+  events: [Event!]!
+  event(id: Int!): Event
+}
+
+type Mutation {
+  createUser(nom: String!, age: Int): User!
+  updateUser(id: Int!, nom: String, age: Int): User!
+  deleteUser(id: Int!): User!
+  addUserToEvent(userId: Int!, eventId: Int!): Event!
+
+  createEvent(title: String!, description: String, dateRange: DateRangeInput!, location: String!, organizerId: Int!): Event!
+  updateEvent(id: Int!, title: String, description: String, dateRange: DateRangeInput, location: String): Event!
+  deleteEvent(id: Int!): Event!
+}
+
+type DateRange {
+  debut: String!
+  fin: String!
+
+}
+
+input DateRangeInput {
+  debut: String!
+  fin: String!
+}
+
+type Event {
+  id: Int!
+  title: String!
+  description: String
+  date: DateRange!
+  location: String
+  createdAt: String!
+  updatedAt: String!
+  participants: [User!]!
+  organizer: User!
+}
+
+type User {
+  id: Int!
+  nom: String!
+  age: Int
+  createdAt: String!
+  updatedAt: String!
+  organizedEvents: [Event!]!
+  eventsParticipated: [Event!]!
+}
