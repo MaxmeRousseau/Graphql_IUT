@@ -1,7 +1,8 @@
 import { ApolloServer } from '@apollo/server'
 import { startStandaloneServer } from '@apollo/server/standalone'
-import { etudiantTypeDefs, etudiantResolvers } from './resolvers/etudiants.js'
 import { gql } from 'graphql-tag'
+import { userTypeDefs, userResolvers } from './resolvers/user.js'
+import { eventTypeDefs, eventResolvers } from './resolvers/event.js'
 
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
@@ -20,8 +21,8 @@ const rootTypeDefs = gql`
 `
 
 const server = new ApolloServer({
-  typeDefs: [rootTypeDefs, etudiantTypeDefs],
-  resolvers: [etudiantResolvers],
+  typeDefs: [rootTypeDefs, userTypeDefs, eventTypeDefs],
+  resolvers: [userResolvers, eventResolvers],
 })
 
 const { url } = await startStandaloneServer(server, {
