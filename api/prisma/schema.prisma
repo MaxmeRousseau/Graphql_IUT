@@ -18,6 +18,8 @@ model User {
   id        Int      @id @default(autoincrement())
   nom       String
   age       Int?
+  password  String?
+  role      String   @default("USER") // Possible values: "USER", "ADMIN"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   organizedEvents Event[] @relation("EventOrganizer")
