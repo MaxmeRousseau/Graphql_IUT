@@ -8,7 +8,7 @@ type Query {
 }
 
 type Mutation {
-  createUser(nom: String!, age: Int): User!
+  createUser(nom: String!, age: Int, password: String!): User!
   updateUser(id: Int!, nom: String, age: Int): User!
   deleteUser(id: Int!): User!
   addUserToEvent(userId: Int!, eventId: Int!): Event!
@@ -16,12 +16,20 @@ type Mutation {
   createEvent(title: String!, description: String, dateRange: DateRangeInput!, location: String!, organizerId: Int!): Event!
   updateEvent(id: Int!, title: String, description: String, dateRange: DateRangeInput, location: String): Event!
   deleteEvent(id: Int!): Event!
+
+  login(nom: String!, password: String!): AuthPayload!
 }
 
 type DateRange {
   debut: String!
   fin: String!
 
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+  role: String!
 }
 
 input DateRangeInput {

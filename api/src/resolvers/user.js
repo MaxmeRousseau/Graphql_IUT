@@ -1,9 +1,13 @@
+import bcrypt from 'bcryptjs'
 
 export const userResolvers = {
 
 	Mutation: {
-		createUser: async (_parent, { nom, age }, { prisma }) => {
-			return prisma.user.create({ data: { nom, age } })
+		createUser: async (_parent, { nom, age, password }, { prisma }) => {
+			const hashed = await bcrypt.hash(password, 10)
+			const created = await prisma.user.create({ data: { nom, age, password: hashed } })
+      delete created.password // ne pas retourner le mot de passe
+			return created
 		},
 
 		updateUser: async (_parent, { id, nom, age }, { prisma }) => {
