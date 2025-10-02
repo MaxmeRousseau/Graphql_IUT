@@ -31,6 +31,19 @@ services:
     depends_on:
       - db
 
+  client:
+    image: node:22
+    container_name: reactClient
+    restart: unless-stopped
+    working_dir: /app
+    command: ["sh", "-c", "npm install --legacy-peer-deps && npm run dev"]
+    volumes:
+      - ./client:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+
 volumes:
   db_data:
     name: graphql_iut_db_data
