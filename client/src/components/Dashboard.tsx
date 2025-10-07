@@ -1,4 +1,6 @@
 import React from 'react';
+import { useQuery } from '@apollo/client';
+import { GET_USERS, GET_EVENTS } from '../queries';
 import { 
   Calendar, 
   Users, 
@@ -21,50 +23,64 @@ interface DashboardStats {
 }
 
 const Dashboard: React.FC = () => {
-  // TODO: Récupérer ces données via GraphQL
+  // Fetch users and events from GraphQL
+  const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_USERS);
+  const { data: eventsData, loading: eventsLoading, error: eventsError } = useQuery(GET_EVENTS);
+
+  const users = usersData?.users || [];
+  const events = eventsData?.events || [];
+
+  // Compute stats from fetched data
+  const totalEvents = events.length;
+  const totalUsers = users.length;
+  const now = new Date();
+  const activeEvents = events.filter((ev: any) => {
+    const debut = ev?.date?.debut ? new Date(ev.date.debut) : null;
+    const fin = ev?.date?.fin ? new Date(ev.date.fin) : null;
+    return debut && fin && debut <= now && now <= fin;
+  }).length;
+  const upcomingEvents = events.filter((ev: any) => {
+    const debut = ev?.date?.debut ? new Date(ev.date.debut) : null;
+    return debut && debut > now;
+  }).length;
+  const totalParticipants = events.reduce((sum: number, ev: any) => sum + (ev.participants ? ev.participants.length : 0), 0);
+  const averageParticipation = totalEvents > 0 ? Math.round(totalParticipants / totalEvents) : 0;
+
   const stats: DashboardStats = {
-    totalEvents: 12,
-    totalUsers: 45,
-    activeEvents: 3,
-    upcomingEvents: 7,
-    totalParticipants: 156,
-    averageParticipation: 78
+    totalEvents,
+    totalUsers,
+    activeEvents,
+    upcomingEvents,
+    totalParticipants,
+    averageParticipation,
   };
 
-  // TODO: Récupérer les événements récents via GraphQL
-  const recentEvents = [
-    {
-      id: '1',
-      title: 'Workshop GraphQL pour débutants',
-      date: '2025-10-15',
-      participants: 18,
-      maxParticipants: 30,
-      status: 'upcoming'
-    },
-    {
-      id: '2',
-      title: 'Conférence React + GraphQL',
-      date: '2025-11-20',
-      participants: 45,
-      maxParticipants: 100,
-      status: 'upcoming'
-    },
-    {
-      id: '3',
-      title: 'Hackathon GraphQL',
-      date: '2025-12-05',
-      participants: 23,
-      maxParticipants: 50,
-      status: 'upcoming'
-    }
-  ];
+  const recentEvents = events
+    .slice()
+    .sort((a: any, b: any) => {
+      const da = a?.date?.debut ? new Date(a.date.debut).getTime() : 0;
+      const db = b?.date?.debut ? new Date(b.date.debut).getTime() : 0;
+      return da - db;
+    })
+    .slice(0, 5)
+    .map((ev: any) => ({
+      id: String(ev.id),
+      title: ev.title,
+      date: ev?.date?.debut || null,
+      participants: ev.participants ? ev.participants.length : 0,
+      maxParticipants: ev.maxParticipants || 0,
+      status: (() => {
+        const debut = ev?.date?.debut ? new Date(ev.date.debut) : null;
+        const fin = ev?.date?.fin ? new Date(ev.date.fin) : null;
+        if (debut && fin && debut <= now && now <= fin) return 'active';
+        if (debut && debut > now) return 'upcoming';
+        return 'past';
+      })(),
+    }));
 
-  // TODO: Récupérer les utilisateurs actifs via GraphQL
-  const activeUsers = [
-    { id: '1', name: 'Alice Dupont', role: 'Organisateur', eventsCount: 5 },
-    { id: '2', name: 'Bob Martin', role: 'Participant', eventsCount: 8 },
-    { id: '3', name: 'Claire Durand', role: 'Organisateur', eventsCount: 3 }
-  ];
+  const activeUsers = users
+    .slice(0, 5)
+    .map((u: any) => ({ id: String(u.id), name: u.nom || 'Utilisateur', role: 'Membre', eventsCount: u.organizedEvents ? u.organizedEvents.length : 0 }));
 
   const StatCard: React.FC<{
     icon: React.ReactNode;
@@ -149,7 +165,7 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="events-summary">
-            {recentEvents.map((event) => (
+            {recentEvents.map((event: any) => (
               <div key={event.id} className="event-summary-card">
                 <div className="event-summary-header">
                   <h3>{event.title}</h3>
@@ -191,10 +207,10 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="users-summary">
-            {activeUsers.map((user) => (
+            {activeUsers.map((user: any) => (
               <div key={user.id} className="user-summary-card">
-                <div className="user-summary-avatar">
-                  {user.name.split(' ').map(n => n[0]).join('')}
+                  <div className="user-summary-avatar">
+                  {user.name.split(' ').map((n: string) => n[0]).join('')}
                 </div>
                 <div className="user-summary-info">
                   <h4>{user.name}</h4>
