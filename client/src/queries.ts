@@ -51,6 +51,81 @@ export const CREATE_USER = gql`
   }
 `;
 
+// Queries that mirror the API Query resolvers
+export const GET_USERS = gql`
+  query GetUsers {
+    users {
+      id
+      nom
+      age
+    }
+  }
+`;
+
+export const GET_USER = gql`
+  query GetUser($id: Int!) {
+    user(id: $id) {
+      id
+      nom
+      age
+      organizedEvents {
+        id
+        title
+      }
+      eventsParticipated {
+        id
+        title
+      }
+    }
+  }
+`;
+
+export const GET_EVENTS = gql`
+  query GetEvents {
+    events {
+      id
+      title
+      description
+      date {
+        debut
+        fin
+      }
+      location
+      organizer {
+        id
+        nom
+      }
+      participants {
+        id
+        nom
+      }
+    }
+  }
+`;
+
+export const GET_EVENT_BY_ID = gql`
+  query GetEventById($id: Int!) {
+    event(id: $id) {
+      id
+      title
+      description
+      date {
+        debut
+        fin
+      }
+      location
+      organizer {
+        id
+        nom
+      }
+      participants {
+        id
+        nom
+      }
+    }
+  }
+`;
+
 /* TODO: Décommentez et adaptez cette requête selon votre schéma GraphQL
 export const GET_USERS = gql`
   query GetUsers {
