@@ -1,6 +1,6 @@
 import React from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_USERS, GET_EVENTS } from '../queries';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_USERS, GET_EVENTS, CREATE_EVENT, ADD_USER_TO_EVENT, UPDATE_EVENT } from '../queries';
 import { 
   Calendar, 
   Users, 
@@ -24,8 +24,8 @@ interface DashboardStats {
 
 const Dashboard: React.FC = () => {
   // Fetch users and events from GraphQL
-  const { data: usersData, loading: usersLoading, error: usersError } = useQuery(GET_USERS);
-  const { data: eventsData, loading: eventsLoading, error: eventsError } = useQuery(GET_EVENTS);
+  const { data: usersData, loading: usersLoading, error: usersError, refetch: refetchUsers } = useQuery(GET_USERS);
+  const { data: eventsData, loading: eventsLoading, error: eventsError, refetch: refetchEvents } = useQuery(GET_EVENTS);
 
   const users = usersData?.users || [];
   const events = eventsData?.events || [];
@@ -109,6 +109,77 @@ const Dashboard: React.FC = () => {
     </div>
   );
 
+  // Quick action state and mutations
+  const [showCreateEvent, setShowCreateEvent] = React.useState(false);
+  const [showInviteUser, setShowInviteUser] = React.useState(false);
+  const [showManageLocation, setShowManageLocation] = React.useState(false);
+
+  // Create event form state
+  const [ceTitle, setCeTitle] = React.useState('');
+  const [ceDescription, setCeDescription] = React.useState('');
+  const [ceDebut, setCeDebut] = React.useState('');
+  const [ceFin, setCeFin] = React.useState('');
+  const [ceLocation, setCeLocation] = React.useState('');
+  const [ceOrganizerId, setCeOrganizerId] = React.useState('');
+
+  // Invite user form state
+  const [inviteUserId, setInviteUserId] = React.useState('');
+  const [inviteEventId, setInviteEventId] = React.useState('');
+
+  // Manage location form state
+  const [mEventId, setMEventId] = React.useState('');
+  const [mLocation, setMLocation] = React.useState('');
+
+  const [createEventMutation, { loading: creating }] = useMutation(CREATE_EVENT);
+  const [addUserToEventMutation, { loading: inviting }] = useMutation(ADD_USER_TO_EVENT);
+  const [updateEventMutation, { loading: updating }] = useMutation(UPDATE_EVENT);
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const variables = {
+        title: ceTitle,
+        description: ceDescription,
+        dateRange: { debut: ceDebut, fin: ceFin },
+        location: ceLocation,
+        organizerId: parseInt(ceOrganizerId, 10) || undefined,
+      };
+      await createEventMutation({ variables, refetchQueries: [{ query: GET_EVENTS }, { query: GET_USERS }] });
+      // reset and close
+      setCeTitle(''); setCeDescription(''); setCeDebut(''); setCeFin(''); setCeLocation(''); setCeOrganizerId('');
+      setShowCreateEvent(false);
+      await refetchEvents();
+      await refetchUsers();
+    } catch (err) {
+      console.error('Create event error', err);
+    }
+  };
+
+  const handleInviteUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const variables = { userId: parseInt(inviteUserId, 10), eventId: parseInt(inviteEventId, 10) };
+      await addUserToEventMutation({ variables, refetchQueries: [{ query: GET_EVENTS }, { query: GET_USERS }] });
+      setInviteUserId(''); setInviteEventId(''); setShowInviteUser(false);
+      await refetchEvents();
+      await refetchUsers();
+    } catch (err) {
+      console.error('Invite error', err);
+    }
+  };
+
+  const handleUpdateLocation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const variables = { id: parseInt(mEventId, 10), location: mLocation };
+      await updateEventMutation({ variables, refetchQueries: [{ query: GET_EVENTS }] });
+      setMEventId(''); setMLocation(''); setShowManageLocation(false);
+      await refetchEvents();
+    } catch (err) {
+      console.error('Update location error', err);
+    }
+  };
+
   return (
     <div className="dashboard">
       <div className="dashboard-header">
@@ -116,9 +187,9 @@ const Dashboard: React.FC = () => {
           <h1>Dashboard</h1>
           <p>Vue d'ensemble de votre plateforme d'événements</p>
         </div>
-        <div className="header-actions">
+        {/* <div className="header-actions">
           <span className="mock-data-indicator">Données factices - TODO: GraphQL</span>
-        </div>
+        </div> */}
       </div>
 
       {/* Statistiques principales */}
@@ -159,7 +230,7 @@ const Dashboard: React.FC = () => {
               <Calendar size={20} />
               Événements récents
             </h2>
-            <button className="btn-secondary" disabled>
+            <button className="btn-secondary">
               Voir tous (TODO: GraphQL)
             </button>
           </div>
@@ -201,7 +272,7 @@ const Dashboard: React.FC = () => {
               <Users size={20} />
               Utilisateurs actifs
             </h2>
-            <button className="btn-secondary" disabled>
+            <button className="btn-secondary">
               Gérer (TODO: GraphQL)
             </button>
           </div>
@@ -234,20 +305,20 @@ const Dashboard: React.FC = () => {
       <div className="quick-actions">
         <h2>Actions rapides</h2>
         <div className="actions-grid">
-          <button className="action-card" disabled>
+          <button className="action-card" onClick={() => setShowCreateEvent(true)}>
             <CalendarPlus size={24} />
             <span>Créer un événement</span>
-            <small>TODO: GraphQL</small>
+            <small>Créer rapidement</small>
           </button>
-          <button className="action-card" disabled>
+          <button className="action-card" onClick={() => setShowInviteUser(true)}>
             <UserPlus size={24} />
             <span>Inviter des utilisateurs</span>
-            <small>TODO: GraphQL</small>
+            <small>Ajouter un participant</small>
           </button>
-          <button className="action-card" disabled>
+          <button className="action-card" onClick={() => setShowManageLocation(true)}>
             <MapPin size={24} />
             <span>Gérer les lieux</span>
-            <small>TODO: GraphQL</small>
+            <small>Modifier lieu d'un événement</small>
           </button>
           <button className="action-card" disabled>
             <TrendingUp size={24} />
@@ -256,6 +327,103 @@ const Dashboard: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Modals / Forms for quick actions */}
+      {showCreateEvent && (
+        <div className="modal">
+          <form className="modal-content" onSubmit={handleCreateEvent}>
+            <h3>Créer un événement</h3>
+            <div className="form-row">
+              <label>Titre</label>
+              <input value={ceTitle} onChange={(e) => setCeTitle(e.target.value)} required />
+            </div>
+            <div className="form-row">
+              <label>Description</label>
+              <textarea value={ceDescription} onChange={(e) => setCeDescription(e.target.value)} />
+            </div>
+            <div className="form-row">
+              <label>Date début (ISO)</label>
+              <input value={ceDebut} onChange={(e) => setCeDebut(e.target.value)} placeholder="2025-10-15T09:00:00Z" required />
+            </div>
+            <div className="form-row">
+              <label>Date fin (ISO)</label>
+              <input value={ceFin} onChange={(e) => setCeFin(e.target.value)} placeholder="2025-10-15T17:00:00Z" required />
+            </div>
+            <div className="form-row">
+              <label>Lieu</label>
+              <input value={ceLocation} onChange={(e) => setCeLocation(e.target.value)} required />
+            </div>
+            <div className="form-row">
+              <label>Organisateur</label>
+              <select value={ceOrganizerId} onChange={(e) => setCeOrganizerId(e.target.value)} required>
+                <option value="">-- choisir --</option>
+                {users.map((u: any) => (
+                  <option key={u.id} value={u.id}>{u.nom}</option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button type="submit" disabled={creating}>Créer</button>
+              <button type="button" onClick={() => setShowCreateEvent(false)}>Annuler</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {showInviteUser && (
+        <div className="modal">
+          <form className="modal-content" onSubmit={handleInviteUser}>
+            <h3>Inviter un utilisateur</h3>
+            <div className="form-row">
+              <label>Utilisateur</label>
+              <select value={inviteUserId} onChange={(e) => setInviteUserId(e.target.value)} required>
+                <option value="">-- choisir --</option>
+                {users.map((u: any) => (
+                  <option key={u.id} value={u.id}>{u.nom}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-row">
+              <label>Événement</label>
+              <select value={inviteEventId} onChange={(e) => setInviteEventId(e.target.value)} required>
+                <option value="">-- choisir --</option>
+                {events.map((ev: any) => (
+                  <option key={ev.id} value={ev.id}>{ev.title}</option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button type="submit" disabled={inviting}>Inviter</button>
+              <button type="button" onClick={() => setShowInviteUser(false)}>Annuler</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {showManageLocation && (
+        <div className="modal">
+          <form className="modal-content" onSubmit={handleUpdateLocation}>
+            <h3>Modifier le lieu d'un événement</h3>
+            <div className="form-row">
+              <label>Événement</label>
+              <select value={mEventId} onChange={(e) => setMEventId(e.target.value)} required>
+                <option value="">-- choisir --</option>
+                {events.map((ev: any) => (
+                  <option key={ev.id} value={ev.id}>{ev.title}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-row">
+              <label>Nouveau lieu</label>
+              <input value={mLocation} onChange={(e) => setMLocation(e.target.value)} required />
+            </div>
+            <div className="modal-actions">
+              <button type="submit" disabled={updating}>Sauvegarder</button>
+              <button type="button" onClick={() => setShowManageLocation(false)}>Annuler</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };

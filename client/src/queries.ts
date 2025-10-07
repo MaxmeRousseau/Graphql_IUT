@@ -126,6 +126,53 @@ export const GET_EVENT_BY_ID = gql`
   }
 `;
 
+// Mutations for quick actions
+export const CREATE_EVENT = gql`
+  mutation CreateEvent($title: String!, $description: String, $dateRange: DateRangeInput!, $location: String!, $organizerId: Int!) {
+    createEvent(title: $title, description: $description, dateRange: $dateRange, location: $location, organizerId: $organizerId) {
+      id
+      title
+      description
+      date {
+        debut
+        fin
+      }
+      location
+      organizer {
+        id
+        nom
+      }
+      participants {
+        id
+        nom
+      }
+    }
+  }
+`;
+
+export const UPDATE_EVENT = gql`
+  mutation UpdateEvent($id: Int!, $title: String, $description: String, $dateRange: DateRangeInput, $location: String) {
+    updateEvent(id: $id, title: $title, description: $description, dateRange: $dateRange, location: $location) {
+      id
+      title
+      location
+    }
+  }
+`;
+
+export const ADD_USER_TO_EVENT = gql`
+  mutation AddUserToEvent($userId: Int!, $eventId: Int!) {
+    addUserToEvent(userId: $userId, eventId: $eventId) {
+      id
+      title
+      participants {
+        id
+        nom
+      }
+    }
+  }
+`;
+
 /* TODO: Décommentez et adaptez cette requête selon votre schéma GraphQL
 export const GET_USERS = gql`
   query GetUsers {
