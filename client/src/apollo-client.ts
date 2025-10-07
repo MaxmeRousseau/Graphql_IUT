@@ -1,16 +1,26 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
 
-// TODO: Configurer Apollo Client pour se connecter au serveur GraphQL
-// TODO: Remplacer 'YOUR_GRAPHQL_ENDPOINT' par l'URL de votre serveur
+// Configure Apollo Client to connect to the GraphQL server
 const httpLink = createHttpLink({
-  uri: 'http://localhost:4000/graphql', // TODO: À remplacer par http://localhost:4000/graphql
+  uri: 'http://localhost:4000/graphql',
 });
 
-// TODO: Créer une instance d'Apollo Client avec le lien HTTP et le cache
+// Auth link to attach JWT from localStorage on each request
+const authLink = setContext((_, { headers }) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+// Create the Apollo Client after authLink is defined
 const client = new ApolloClient({
-  link: httpLink,
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
-  // TODO: Ajouter d'autres options si nécessaire (headers, gestion d'erreurs, etc.)
 });
 
 export default client;

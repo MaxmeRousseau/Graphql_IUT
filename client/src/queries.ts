@@ -25,6 +25,32 @@ export const GET_EVENTS = gql`
 `;
 */
 
+// Authentication mutations used by the client
+export const LOGIN = gql`
+  mutation Login($nom: String!, $password: String!) {
+    login(nom: $nom, password: $password) {
+      token
+      user {
+        id
+        nom
+        age
+      }
+      role
+    }
+  }
+`;
+
+export const CREATE_USER = gql`
+  mutation CreateUser($nom: String!, $age: Int, $password: String!) {
+    createUser(nom: $nom, age: $age, password: $password) {
+      id
+      nom
+      age
+      createdAt
+    }
+  }
+`;
+
 /* TODO: Décommentez et adaptez cette requête selon votre schéma GraphQL
 export const GET_USERS = gql`
   query GetUsers {
